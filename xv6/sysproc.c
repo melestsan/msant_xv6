@@ -26,7 +26,10 @@ sys_exit(void)
 int
 sys_wait(void)
 {
-  return wait();
+  int *n;
+  if(argptr(0,&n,n) < 0)
+    return -1;
+  return wait(n);
 }
 
 int
