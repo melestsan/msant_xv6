@@ -26,10 +26,10 @@ sys_exit(void)
 int
 sys_wait(void)
 {
-  int *n;
-  if(argptr(0,&n,n) < 0)
+  char* n;
+  if(argptr(0,&n,sizeof(*n)) < 0)
     return -1;
-  return wait(n);
+  return wait((int*) n);
 }
 
 int
