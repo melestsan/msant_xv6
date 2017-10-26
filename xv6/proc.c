@@ -277,7 +277,8 @@ wait(int* status)
   struct proc *p;
   int havekids, pid;
   struct proc *curproc = myproc();
-  
+  int prevStatus = *status;  
+
   acquire(&ptable.lock);
   for(;;){
     // Scan through table looking for exited children.
@@ -306,6 +307,7 @@ wait(int* status)
     // No point waiting if we don't have any children.
     if(!havekids || curproc->killed){
       release(&ptable.lock);
+      *status = prevStatus; // reverts to previous status
       return -1;
     }
 
@@ -315,8 +317,30 @@ wait(int* status)
 }
 
 int waitpid(int pid, int* status, int options) {
-    //TODO: Implement waitpid()
-    return 0;
+  struct proc *p;
+  int havepid;
+  struct proc *curproc = myproc();
+  
+  acquire(&ptable.lock); // get lock
+  for(;;) { 
+     havepid = 0;
+     // search table for processes
+     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+	if(p->pid != pid) // go to next process if pid does not match
+	  continue;
+        havepid = 1; // a process with the pid does exists
+	//TODO: something here
+     }
+     
+     // if process w/ pid does not exists, exit
+     if(!havepid || curproc->killed) {
+	release(&ptable.lock);
+	return -1;
+     }
+     
+     // wait for process w/ pid to exit
+     sleep(curproc, &ptable.lock);
+  }
 }
 
 //PAGEBREAK: 42
