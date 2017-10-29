@@ -298,7 +298,7 @@ wait(int* status)
         p->name[0] = 0;
         p->killed = 0;
         p->state = UNUSED;
-	*status = p->exitstatus; // ADDED
+	if(status) {*status = p->exitstatus;} // checks if status is NULL
         release(&ptable.lock);
         return pid;
       }
@@ -316,25 +316,54 @@ wait(int* status)
   }
 }
 
+// Options:
+// 0 - return status of terminated process
 int waitpid(int pid, int* status, int options) {
   struct proc *p;
-  int havepid;
+  int havepid, havekid, lookingforchild = 0;
+  int pidO;
   struct proc *curproc = myproc();
+  int prevStatus = *status;
   
+  if(pid == 0) {lookingforchild = 1;}
+
   acquire(&ptable.lock); // get lock
   for(;;) { 
      havepid = 0;
      // search table for processes
      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-	if(p->pid != pid) // go to next process if pid does not match
-	  continue;
-        havepid = 1; // a process with the pid does exists
-	//TODO: something here
+        if(lookingforchild) {
+	  if(p->parent != curproc)
+	    continue;
+	} else {
+	  if(p->pid != pid) // go to next process if pid does not match
+	    continue;
+	}
+	if(lookingforchild)
+	  havekid = 1;
+	else
+          havepid = 1; // a process with the pid does exists
+	if(p->state == ZOMBIE) { // process pid is done
+	  pidO = p->pid;
+	  kfree(p->kstack);
+	  p->kstack = 0;
+	  freevm(p->pgdir);
+	  p->pid = 0;
+	  p->parent = 0;
+	  p->killed = 0;
+	  p->state = UNUSED;
+	  if(*status) {*status = p->exitstatus;} // checks if status is NULL
+	  release(&ptable.lock);
+	  return pidO;
+	}
      }
      
      // if process w/ pid does not exists, exit
-     if(!havepid || curproc->killed) {
+     if((!havepid && !lookingforchild) || 
+	 curproc->killed || 
+	 (lookingforchild && !havekid)) {
 	release(&ptable.lock);
+	*status = prevStatus;
 	return -1;
      }
      

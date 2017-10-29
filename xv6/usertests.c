@@ -21,19 +21,19 @@ iputtest(void)
 
   if(mkdir("iputdir") < 0){
     printf(stdout, "mkdir failed\n");
-    exit(0);
+    exit(-1);
   }
   if(chdir("iputdir") < 0){
     printf(stdout, "chdir iputdir failed\n");
-    exit(0);
+    exit(-1);
   }
   if(unlink("../iputdir") < 0){
     printf(stdout, "unlink ../iputdir failed\n");
-    exit(0);
+    exit(-1);
   }
   if(chdir("/") < 0){
     printf(stdout, "chdir / failed\n");
-    exit(0);
+    exit(-1);
   }
   printf(stdout, "iput test ok\n");
 }
@@ -49,20 +49,20 @@ exitiputtest(void)
   pid = fork();
   if(pid < 0){
     printf(stdout, "fork failed\n");
-    exit(0);
+    exit(-1);
   }
   if(pid == 0){
     if(mkdir("iputdir") < 0){
       printf(stdout, "mkdir failed\n");
-      exit(0);
+      exit(-1);
     }
     if(chdir("iputdir") < 0){
       printf(stdout, "child chdir failed\n");
-      exit(0);
+      exit(-1);
     }
     if(unlink("../iputdir") < 0){
       printf(stdout, "unlink ../iputdir failed\n");
-      exit(0);
+      exit(-1);
     }
     exit(0);
   }
@@ -89,25 +89,25 @@ openiputtest(void)
   printf(stdout, "openiput test\n");
   if(mkdir("oidir") < 0){
     printf(stdout, "mkdir oidir failed\n");
-    exit(0);
+    exit(-1);
   }
   pid = fork();
   if(pid < 0){
     printf(stdout, "fork failed\n");
-    exit(0);
+    exit(-1);
   }
   if(pid == 0){
     int fd = open("oidir", O_RDWR);
     if(fd >= 0){
       printf(stdout, "open directory for write succeeded\n");
-      exit(0);
+      exit(-1);
     }
     exit(0);
   }
   sleep(1);
   if(unlink("oidir") != 0){
     printf(stdout, "unlink failed\n");
-    exit(0);
+    exit(-1);
   }
   wait(&status);
   printf(stdout, "openiput test ok\n");
@@ -124,7 +124,7 @@ opentest(void)
   fd = open("echo", 0);
   if(fd < 0){
     printf(stdout, "open echo failed!\n");
-    exit(0);
+    exit(-1);
   }
   close(fd);
   fd = open("doesnotexist", 0);
@@ -147,16 +147,16 @@ writetest(void)
     printf(stdout, "creat small succeeded; ok\n");
   } else {
     printf(stdout, "error: creat small failed!\n");
-    exit(0);
+    exit(-1);
   }
   for(i = 0; i < 100; i++){
     if(write(fd, "aaaaaaaaaa", 10) != 10){
       printf(stdout, "error: write aa %d new file failed\n", i);
-      exit(0);
+      exit(-1);
     }
     if(write(fd, "bbbbbbbbbb", 10) != 10){
       printf(stdout, "error: write bb %d new file failed\n", i);
-      exit(0);
+      exit(-1);
     }
   }
   printf(stdout, "writes ok\n");
@@ -166,20 +166,20 @@ writetest(void)
     printf(stdout, "open small succeeded ok\n");
   } else {
     printf(stdout, "error: open small failed!\n");
-    exit(0);
+    exit(-1);
   }
   i = read(fd, buf, 2000);
   if(i == 2000){
     printf(stdout, "read succeeded ok\n");
   } else {
     printf(stdout, "read failed\n");
-    exit(0);
+    exit(-1);
   }
   close(fd);
 
   if(unlink("small") < 0){
     printf(stdout, "unlink small failed\n");
-    exit(0);
+    exit(-1);
   }
   printf(stdout, "small file test ok\n");
 }
@@ -194,14 +194,14 @@ writetest1(void)
   fd = open("big", O_CREATE|O_RDWR);
   if(fd < 0){
     printf(stdout, "error: creat big failed!\n");
-    exit(0);
+    exit(-1);
   }
 
   for(i = 0; i < MAXFILE; i++){
     ((int*)buf)[0] = i;
     if(write(fd, buf, 512) != 512){
       printf(stdout, "error: write big file failed\n", i);
-      exit(0);
+      exit(-1);
     }
   }
 
@@ -210,7 +210,7 @@ writetest1(void)
   fd = open("big", O_RDONLY);
   if(fd < 0){
     printf(stdout, "error: open big failed!\n");
-    exit(0);
+    exit(-1);
   }
 
   n = 0;
@@ -219,12 +219,12 @@ writetest1(void)
     if(i == 0){
       if(n == MAXFILE - 1){
         printf(stdout, "read only %d blocks from big", n);
-        exit(0);
+        exit(-1);
       }
       break;
     } else if(i != 512){
       printf(stdout, "read failed %d\n", i);
-      exit(0);
+      exit(-1);
     }
     if(((int*)buf)[0] != n){
       printf(stdout, "read content of block %d is %d\n",
@@ -236,7 +236,7 @@ writetest1(void)
   close(fd);
   if(unlink("big") < 0){
     printf(stdout, "unlink big failed\n");
-    exit(0);
+    exit(-1);
   }
   printf(stdout, "big files ok\n");
 }
@@ -270,7 +270,7 @@ void dirtest(void)
 
   if(mkdir("dir0") < 0){
     printf(stdout, "mkdir failed\n");
-    exit(0);
+    exit(-1);
   }
 
   if(chdir("dir0") < 0){
