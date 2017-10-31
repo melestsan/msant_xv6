@@ -307,7 +307,7 @@ wait(int* status)
     // No point waiting if we don't have any children.
     if(!havekids || curproc->killed){
       release(&ptable.lock);
-      *status = prevStatus; // reverts to previous status
+      if(*status) {*status = prevStatus;} // checks for NULL and reverts status
       return -1;
     }
 
@@ -316,35 +316,24 @@ wait(int* status)
   }
 }
 
-// Options:
-// 0 - return status of terminated process
-int waitpid(int pid, int* status, int options) {
+// TODO: Handle when multiple processes wait on the same process
+int waitpid(int pid, int* status, int options) 
+{
   struct proc *p;
-  int havepid, havekid, lookingforchild = 0;
-  int pidO;
+  int havepid/*, pidO*/;
   struct proc *curproc = myproc();
   int prevStatus = *status;
-  
-  if(pid == 0) {lookingforchild = 1;}
 
-  acquire(&ptable.lock); // get lock
+  acquire(&ptable.lock);
   for(;;) { 
      havepid = 0;
      // search table for processes
      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-        if(lookingforchild) {
-	  if(p->parent != curproc)
-	    continue;
-	} else {
-	  if(p->pid != pid) // go to next process if pid does not match
-	    continue;
-	}
-	if(lookingforchild)
-	  havekid = 1;
-	else
-          havepid = 1; // a process with the pid does exists
+	if(p->pid != pid) // go to next process if pid does not match
+	  continue;
+        havepid = 1;
 	if(p->state == ZOMBIE) { // process pid is done
-	  pidO = p->pid;
+	  // pidO = p->pid;
 	  kfree(p->kstack);
 	  p->kstack = 0;
 	  freevm(p->pgdir);
@@ -354,16 +343,14 @@ int waitpid(int pid, int* status, int options) {
 	  p->state = UNUSED;
 	  if(*status) {*status = p->exitstatus;} // checks if status is NULL
 	  release(&ptable.lock);
-	  return pidO;
+	  return pid;
 	}
      }
      
      // if process w/ pid does not exists, exit
-     if((!havepid && !lookingforchild) || 
-	 curproc->killed || 
-	 (lookingforchild && !havekid)) {
+     if(!havepid || curproc->killed) {
 	release(&ptable.lock);
-	*status = prevStatus;
+	if(*status) {*status = prevStatus;}
 	return -1;
      }
      
