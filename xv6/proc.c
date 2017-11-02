@@ -372,12 +372,17 @@ int waitpid(int pid, int* status, int options)
 // return -1 otherwise
 int setpriority(int priority) {
   struct proc *curproc = myproc();
-
+   
+  
   // passed in value is not a valid priority
   if(priority < 0 || priority > 63)
     return -1;
-
+  
+  // lock ensures that set priority will respect the ordering
+  // of when its called
+  acquire(&ptable.lock);
   curproc->priority = priority;
+  release(&ptable.lock);
 
   return 0;
 }
