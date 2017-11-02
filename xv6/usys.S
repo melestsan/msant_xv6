@@ -30,3 +30,4 @@ SYSCALL(sbrk)
 SYSCALL(sleep)
 SYSCALL(uptime)
 SYSCALL(waitpid) // added waitpid
+SYSCALL(setpriority) // added set priority

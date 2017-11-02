@@ -88,6 +88,9 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+ 
+  // Assign priority with median
+  p->priority = 32;
 
   release(&ptable.lock);
 
@@ -199,6 +202,9 @@ fork(void)
   np->sz = curproc->sz;
   np->parent = curproc;
   *np->tf = *curproc->tf;
+
+  // child inherits parent's priority
+  np->priority = curproc->priority;
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
@@ -359,6 +365,22 @@ int waitpid(int pid, int* status, int options)
   }
 }
 
+// setpriority sets changes the priority of the process that called it
+// Priority levels range from 0-63
+// returns 0 upon sucessful priority change
+// return -1 otherwise
+int setpriority(int priority) {
+  struct proc *curproc = myproc();
+
+  // passed in value is not a valid priority
+  if(priority < 0 || priority > 63)
+    return -1;
+
+  curproc->priority = priority;
+
+  return 0;
+}
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -370,6 +392,7 @@ int waitpid(int pid, int* status, int options)
 void
 scheduler(void)
 {
+  struct proc *highest;
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
@@ -378,25 +401,28 @@ scheduler(void)
     // Enable interrupts on this processor.
     sti();
 
-    // Loop over process table looking for process to run.
+    // Loop over ENTIRE process table looking for highest priority.
     acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    for(p = ptable.proc, highest = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
+      if(p->priority > highest->priority)
+        highest = p;
+   
+        // Switch to chosen process. Is is the process's job
+        // to release ptable.lock and then reacquire it
+        // before jumping back to us.
+      
+        c->proc = p;
+        switchuvm(p);
+        p->state = RUNNING;
 
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
+        swtch(&(c->scheduler), p->context);
+        switchkvm();
 
-      swtch(&(c->scheduler), p->context);
-      switchkvm();
-
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
-      c->proc = 0;
+        // Process is done running for now.
+        // It should have changed its p->state before coming back.
+        c->proc = 0;
     }
     release(&ptable.lock);
 
