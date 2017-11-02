@@ -89,8 +89,8 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
  
-  // Assign priority with median
-  p->priority = 32;
+  // Assign priority with default 20
+  p->priority = 20;
 
   release(&ptable.lock);
 
@@ -367,6 +367,7 @@ int waitpid(int pid, int* status, int options)
 
 // setpriority sets changes the priority of the process that called it
 // Priority levels range from 0-63
+// 0 - highest, 63 lowest
 // returns 0 upon sucessful priority change
 // return -1 otherwise
 int setpriority(int priority) {
@@ -406,7 +407,7 @@ scheduler(void)
     for(p = ptable.proc, highest = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
-      if(p->priority > highest->priority)
+      if(p->priority < highest->priority)
         highest = p;
    
         // Switch to chosen process. Is is the process's job
