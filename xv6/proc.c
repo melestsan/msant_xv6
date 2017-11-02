@@ -366,8 +366,7 @@ int waitpid(int pid, int* status, int options)
 }
 
 // setpriority sets changes the priority of the process that called it
-// Priority levels range from 0-63
-// 0 - highest, 63 lowest
+// Priority levels range from 0-63, 0 is highest
 // returns 0 upon sucessful priority change
 // return -1 otherwise
 int setpriority(int priority) {
@@ -395,6 +394,9 @@ int setpriority(int priority) {
 //  - swtch to start running that process
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
+
+// TODO: Have scheduler change proc if setpriority
+// gives another proc higher priority than current proc
 void
 scheduler(void)
 {
