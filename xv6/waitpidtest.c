@@ -88,7 +88,11 @@ void waitpidtest2() {
 }
 
 int main(int argc, char* argv[]) {
-    // waitpidtest1();
-    waitpidtest2();
+    if(atoi(argv[1]) == 1)
+      waitpidtest1();
+    else if(atoi(argv[1]) == 2)  
+      waitpidtest2();
+    else
+      printf(1, "to test type waitpidtest #");
     exit(0);
 }
