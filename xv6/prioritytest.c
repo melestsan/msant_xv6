@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
   else if(atoi(argv[1]) == 2)
     prioritytest2();
   else
-    printf(1, "to test type \"setpriority #\"");  
+    printf(1, "to test type \"setpriority #\"\n");  
 
   exit(0);
 }

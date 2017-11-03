@@ -84,7 +84,7 @@ void waitpidtest2() {
 	exit(-1);
    }
 
-   printf(1, "waitpid test 2 okay");
+   printf(1, "waitpid test 2 okay\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -93,6 +93,6 @@ int main(int argc, char* argv[]) {
     else if(atoi(argv[1]) == 2)  
       waitpidtest2();
     else
-      printf(1, "to test type waitpidtest #");
+      printf(1, "to test type waitpidtest #\n");
     exit(0);
 }

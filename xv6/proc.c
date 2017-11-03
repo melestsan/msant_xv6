@@ -234,6 +234,7 @@ void
 exit(int status)
 {
   struct proc *curproc = myproc();
+  // struct proc *iter;
   struct proc *p;
   int fd;
 
@@ -257,8 +258,8 @@ exit(int status)
 
   acquire(&ptable.lock);
 
-  // Parent might be sleeping in wait().
   wakeup1(curproc->parent);
+  
 
   // Pass abandoned children to init.
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
@@ -322,11 +323,10 @@ wait(int* status)
   }
 }
 
-// TODO: Handle when multiple processes wait on the same process
 int waitpid(int pid, int* status, int options) 
 {
   struct proc *p;
-  int havepid/*, pidO*/;
+  int havepid;
   struct proc *curproc = myproc();
   int prevStatus = *status;
 
@@ -337,9 +337,8 @@ int waitpid(int pid, int* status, int options)
      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
 	if(p->pid != pid) // go to next process if pid does not match
 	  continue;
-        havepid = 1;
+        havepid = 1; 
 	if(p->state == ZOMBIE) { // process pid is done
-	  // pidO = p->pid;
 	  kfree(p->kstack);
 	  p->kstack = 0;
 	  freevm(p->pgdir);

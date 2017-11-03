@@ -35,11 +35,11 @@ sys_wait(void)
 int 
 sys_waitpid(void) {
   int pid, options;
-  char* status;
+  int* status;
 
-  if((argint(0,&pid) || argptr(1, &status, sizeof(*status)) || argint(2, &options)) < 0)
+  if((argint(0,&pid) || argptr(1, (char**) &status, sizeof(*status)) || argint(2, &options)) < 0)
     return -1;
-  return waitpid(pid, (int*)status, options);
+  return waitpid(pid, status, options);
 }
 
 int
