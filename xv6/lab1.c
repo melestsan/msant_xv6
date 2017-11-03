@@ -113,15 +113,16 @@ int PScheduler(void) {
 	if (pid > 0 ) {
 	  continue;
 	} else if ( pid == 0) {
-          //printf(1, "\n Hello! this is child# %d and I will change my priority to %d \n",getpid(),60-20*i);
+          printf(1, "\n Hello! this is child# %d and I will change my priority to %d \n",getpid(),60-20*i);
 	  setpriority(60-20*i);	
+
 	  for (j=0;j<50000;j++) {
 		for(k=0;k<10000;k++) {
 			asm("nop"); 
 		}
 	  }
-	  printf(1, "\n child# %d with priority %d has finished! \n",getpid(),60-20*i);		
-	  exit(0);
+
+	  printf(1, "\n child# %d with priority %d has finished! \n",getpid(),60-20*i);		   exit(0);
         } else {
 	  printf(2," \n Error \n");
 	  exit(-1);
@@ -130,12 +131,13 @@ int PScheduler(void) {
 
     if(pid > 0) {
 	for (i = 0; i <  3; i++) {
+	    //printf(1, "\n Parent is now waiting\n");
 	    ret_pid = wait(&exit_status);
 	    if(ret_pid < 0) {
 		printf(1, "wait error\n");
 		exit(-1);
 	    }
-	    //printf(1,"\n This is the parent: child with PID# %d has finished with status %d \n",ret_pid,exit_status);
+	    printf(1,"\n This is the parent: child with PID# %d has finished with status %d \n",ret_pid,exit_status);
         }
         printf(1,"\n if processes with highest priority finished first then its correct \n");
     }
