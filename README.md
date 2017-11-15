@@ -10,8 +10,8 @@
 
 ## Lab 1 Clarification
  + `exit(int)` - the argument passed into exit updates the process's exitstatus member
- + `wait(int\*)` - the pointer gets updated with the exit status of the child.
- + `waitpid(int,int\*,int)` - acts like `wait(int\*)`, but with additional functionality.
+ + `wait(int*)` - the pointer gets updated with the exit status of the child.
+ + `waitpid(int,int*,int)` - acts like `wait(int*)`, but with additional functionality.
 ..1. First argument is the pid of the process that the caller wants to wait for
 ..2. Second argument is a pointer that gets updated with the exit status of the process the caller is waiting for
 ..3. Third argument represents the options for waitpid
